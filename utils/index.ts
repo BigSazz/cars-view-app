@@ -1,3 +1,5 @@
+import { CarProps, FilterProps } from "@/types";
+
 export const calculateCarRent = (city_mpg: number, year: number) => {
 	const basePricePerDay = 50; // Base rental price per day in dollars
 	const mileageFactor = 0.1; // Additional rate per mile driven
@@ -13,15 +15,58 @@ export const calculateCarRent = (city_mpg: number, year: number) => {
 	return rentalRatePerDay.toFixed(0);
 };
 
-export async function fetchCars() {
+export const updateSearchParams = (type: string, value: string) => {
+	// Get the current URL search params
+	const searchParams = new URLSearchParams(window.location.search);
+  
+	// Set the specified search parameter to the given value
+	searchParams.set(type, value);
+  
+	// Set the specified search parameter to the given value
+	const newPathname = `${window.location.pathname}?${searchParams.toString()}`;
+  
+	return newPathname;
+};
+
+export const deleteSearchParams = (type: string) => {
+	// Set the specified search parameter to the given value
+	const newSearchParams = new URLSearchParams(window.location.search);
+  
+	// Delete the specified search parameter
+	newSearchParams.delete(type.toLocaleLowerCase());
+  
+	// Construct the updated URL pathname with the deleted search parameter
+	const newPathname = `${window.location.pathname}?${newSearchParams.toString()}`;
+  
+	return newPathname;
+};
+
+export async function fetchCars(filter: FilterProps) {
+	const { manufacturer, year, fuel, model, limit } = filter;
+
 	const headers = {
 		'X-RapidAPI-Key': 'b33b0ed40cmsh9d6c15e14db2f16p189f57jsna53d03513632',
 		'X-RapidAPI-Host': 'cars-by-api-ninjas.p.rapidapi.com'
 	}
 
-	const res = await fetch('https://cars-by-api-ninjas.p.rapidapi.com/v1/cars?model=corolla', { headers: headers });
+	const res = await fetch(`https://cars-by-api-ninjas.p.rapidapi.com/v1/cars?make=${manufacturer}&model=${model}&year=${year}&limit=${limit}&fuel_type=${fuel}`, { headers: headers });
 
 	const data = await res.json();
 
 	return data;
-}
+};
+
+export const generateCarImageUrl = (car: CarProps, angle?: string) => {
+	const url = new URL(`https://cdn.imagin.studio/getimage`);
+
+	const { make, model, year } = car;
+
+	url.searchParams.append('customer', 'ngosazeoviawecompany');
+	url.searchParams.append('make', make);
+	url.searchParams.append('modelFamily', model.split(' ')[0]);
+	url.searchParams.append('zoomType', 'fullscreen');
+	url.searchParams.append('modelYear', `${year}`);
+	url.searchParams.append('angle', `${angle}`);
+
+	return `${url}`
+};
